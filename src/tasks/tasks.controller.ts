@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 
 import { TasksService } from './tasks.service';
-import { Task } from './interfaces/task.interface';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -25,9 +25,9 @@ export class TasksController {
   findOne(@Param('id') id: string) {
     return this.tasksService.findOne(id);
   }
-  //   @UseGuards(AuthGuard)
+
   @Post()
-  create(@Body() createTaskDto: Omit<Task, 'id'>) {
+  create(@Body() createTaskDto: CreateTaskDto) {
     return this.tasksService.create(createTaskDto);
   }
 

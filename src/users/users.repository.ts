@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PermissionAction } from 'src/enums/permissions';
+import { PermissionAction } from '../enums/permissions';
 import { User } from './interfaces/user.interface';
-import { Role } from 'src/enums/roles';
+import { Role } from '../enums/roles';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 const adminPermissions = Object.values(PermissionAction);
 const userPermissions = [
@@ -62,7 +63,7 @@ export class UsersRepository {
     return this.users.find((u) => u.id === Number(id));
   }
 
-  update(id: string, user: { rating: number }): User | null {
+  update(id: string, user: UpdateUserDto): User | null {
     const index = this.users.findIndex((u) => u.id === Number(id));
     if (index === -1) {
       return null;
@@ -71,6 +72,7 @@ export class UsersRepository {
       ...this.users[index],
       ...user,
     };
+    return this.users[index];
   }
 
   remove(id: string) {

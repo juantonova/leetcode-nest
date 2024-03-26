@@ -4,14 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TasksRepository } from './tasks.repository';
-import { Task } from './interfaces/task.interface';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
 
 @Injectable()
 export class TasksService {
   constructor(private readonly repository: TasksRepository) {}
 
-  create(task: Omit<Task, 'id'>) {
+  create(task: CreateTaskDto) {
     const {
       description,
       incoming_example,
@@ -32,7 +33,7 @@ export class TasksService {
       !score ||
       !title
     ) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
 
     const newTask = this.repository.create(task);
@@ -46,29 +47,29 @@ export class TasksService {
 
   findOne(id: string) {
     if (!id) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
     const task = this.repository.findOneById(id);
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException(NotFoundErrors.TASK);
     }
     return { task };
   }
 
   update(id: string, updateTaskDto: UpdateTaskDto) {
     if (!id) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
     const task = this.repository.update(id, updateTaskDto);
     if (!task) {
-      throw new NotFoundException('Task not found');
+      throw new NotFoundException(NotFoundErrors.TASK);
     }
     return { task };
   }
 
   remove(id: string) {
     if (!id) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
     this.repository.remove(id);
     return { task_id: id };

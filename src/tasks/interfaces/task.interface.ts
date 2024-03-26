@@ -1,5 +1,5 @@
-import { CategoryType } from 'src/enums/categories';
-import { Tag } from 'src/enums/tags';
+import { CategoryType } from '../../enums/categories';
+import { Tag } from '../../enums/tags';
 
 export interface Task {
   id: number;

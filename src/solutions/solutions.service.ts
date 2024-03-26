@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { SolutionsRepository } from './solutions.repository';
 import { CreateSolutionDto } from './dto/create-solution.dto';
+import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
 
 @Injectable()
 export class SolutionsService {
@@ -13,7 +14,7 @@ export class SolutionsService {
   create(solution: CreateSolutionDto) {
     const { user_id, task_id, solution: result } = solution;
     if (!user_id || !task_id || !result) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
 
     const newSolution = this.repository.create(solution);
@@ -22,12 +23,12 @@ export class SolutionsService {
 
   findAllByTaskId(id: string) {
     if (!id) {
-      throw new BadRequestException('Invalid request');
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const solution = this.repository.findAllByTaskId(id);
-    if (!solution) {
-      throw new NotFoundException('Solution not found');
+    const solutions = this.repository.findAllByTaskId(id);
+    if (!solutions) {
+      throw new NotFoundException(NotFoundErrors.SOLUTION);
     }
-    return { solution };
+    return { solutions };
   }
 }

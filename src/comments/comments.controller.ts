@@ -12,7 +12,7 @@ export class CommentsController {
   }
 
   @Post()
-  update(@Body() createCommentDto: CreateCommentDto) {
+  create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentsService.create(createCommentDto);
   }
 

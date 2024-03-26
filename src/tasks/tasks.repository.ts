@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Task } from './interfaces/task.interface';
-import { CategoryType } from 'src/enums/categories';
-import { Tag } from 'src/enums/tags';
+import { CategoryType } from '../enums/categories';
+import { Tag } from '../enums/tags';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksRepository {
@@ -46,7 +48,7 @@ export class TasksRepository {
     return this.tasks.find((t) => t.id === Number(id));
   }
 
-  create(newTask: Omit<Task, 'id'>): Task {
+  create(newTask: CreateTaskDto): Task {
     this.tasks.push({
       ...newTask,
       id: this.tasks.length,
@@ -55,7 +57,7 @@ export class TasksRepository {
     return this.tasks.at(-1);
   }
 
-  update(id: string, task: Partial<Task>): Task | null {
+  update(id: string, task: UpdateTaskDto): Task | null {
     const index = this.tasks.findIndex((t) => t.id === Number(id));
     if (index === -1) {
       return null;
@@ -64,6 +66,7 @@ export class TasksRepository {
       ...this.tasks[index],
       ...task,
     };
+    return this.tasks[index];
   }
 
   remove(id: string) {

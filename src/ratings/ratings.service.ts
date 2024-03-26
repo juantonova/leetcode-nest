@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { RatingsRepository } from '../ratings/ratings.repository';
 import { CreateRatingDto } from '../ratings/dto/create-rating.dto';
+import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
 
 @Injectable()
 export class RatingsService {
@@ -17,12 +18,12 @@ export class RatingsService {
 
   create(createRatingDto: CreateRatingDto) {
     const { rating, task_id, user_id } = createRatingDto;
-    if (!rating || task_id || user_id) {
-      throw new BadRequestException('Invalid request');
+    if (!rating || !task_id || !user_id) {
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
     const newRating = this.repository.create(createRatingDto);
     if (!newRating) {
-      throw new NotFoundException('rating not found');
+      throw new NotFoundException(NotFoundErrors.RATING);
     }
     return { rating: newRating };
   }
