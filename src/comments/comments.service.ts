@@ -3,36 +3,48 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CommentsRepository } from './comments.repository';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Comment } from './entities/comment.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly repository: CommentsRepository) {}
+  constructor(
+    @InjectRepository(Comment)
+    private repository: Repository<Comment>,
+  ) {}
 
-  findAllByTaskId(id: string) {
-    const comments = this.repository.findAllByTaskId(id);
+  async findAllByTaskId(id: string) {
+    const comments = await this.repository.findBy({ task_id: Number(id) });
     return { comments };
   }
 
-  create(createCommentDto: CreateCommentDto) {
+  async create(createCommentDto: CreateCommentDto) {
     const { content, task_id, user_id } = createCommentDto;
     if (!content || !task_id || !user_id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const comment = this.repository.create(createCommentDto);
-    if (!comment) {
+    const comment = {
+      ...createCommentDto,
+      created_at: new Date().toDateString(),
+    };
+    const newComment = await this.repository.save(comment);
+    if (!newComment) {
       throw new NotFoundException(NotFoundErrors.COMMENT);
     }
-    return { comment };
+    return { comment: newComment };
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    this.repository.remove(id);
+    const comment = await this.repository.findBy({ id: Number(id) });
+    if (comment) {
+      await this.repository.remove(comment);
+    }
     return { comment_id: id };
   }
 }
