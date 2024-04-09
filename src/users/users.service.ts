@@ -3,53 +3,63 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './interfaces/user.interface';
 import { FindUserDto } from './dto/find-user.dto';
 import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User as UserEntity } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly repository: UsersRepository) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private repository: Repository<UserEntity>,
+  ) {}
 
   private updateUserInfoForResponse(user: User): FindUserDto {
     const { id, role, name, rating, permissions } = user;
     return { id, role, name, rating, permissions };
   }
 
-  findAll() {
-    const users = this.repository.findAll();
+  async findAll() {
+    const users = await this.repository.find();
     return { users: users.map(this.updateUserInfoForResponse) };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const user = this.repository.findOneById(id);
+
+    const user = await this.repository.findOneBy({ id: Number(id) });
     if (!user) {
       throw new NotFoundException(NotFoundErrors.USER);
     }
     return { user: this.updateUserInfoForResponse(user) };
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    if (!id) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    if (!id || !updateUserDto) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const user = this.repository.update(id, updateUserDto);
+    await this.repository.update(id, updateUserDto);
+    const user = await this.repository.findOneBy({ id: Number(id) });
     if (!user) {
       throw new NotFoundException(NotFoundErrors.USER);
     }
     return { user: this.updateUserInfoForResponse(user) };
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    this.repository.remove(id);
+    const user = await this.repository.findOneBy({ id: Number(id) });
+    if (user) {
+      await this.repository.remove(user);
+    }
     return { user_id: id };
   }
 }

@@ -3,22 +3,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { TasksRepository } from './tasks.repository';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Task } from './entities/task.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly repository: TasksRepository) {}
+  constructor(
+    @InjectRepository(Task)
+    private repository: Repository<Task>,
+  ) {}
 
-  create(task: CreateTaskDto) {
+  async create(task: CreateTaskDto) {
     const {
       description,
       incoming_example,
       outgoing_example,
       tags,
-      category,
       additional_info,
       score,
       title,
@@ -28,7 +32,6 @@ export class TasksService {
       !incoming_example ||
       !outgoing_example ||
       !tags ||
-      !category ||
       !additional_info ||
       !score ||
       !title
@@ -36,42 +39,46 @@ export class TasksService {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
 
-    const newTask = this.repository.create(task);
+    const newTask = await this.repository.save(task);
     return { task: newTask };
   }
 
-  findAll() {
-    const tasks = this.repository.findAll();
+  async findAll() {
+    const tasks = await this.repository.find();
     return { tasks };
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const task = this.repository.findOneById(id);
+    const task = await this.repository.findOneBy({ id: Number(id) });
     if (!task) {
       throw new NotFoundException(NotFoundErrors.TASK);
     }
     return { task };
   }
 
-  update(id: string, updateTaskDto: UpdateTaskDto) {
-    if (!id) {
+  async update(id: string, updateTaskDto: UpdateTaskDto) {
+    if (!id || !updateTaskDto) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const task = this.repository.update(id, updateTaskDto);
-    if (!task) {
+    await this.repository.update(id, updateTaskDto);
+    const newTask = await this.repository.findOneBy({ id: Number(id) });
+    if (!newTask) {
       throw new NotFoundException(NotFoundErrors.TASK);
     }
-    return { task };
+    return { task: newTask };
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    this.repository.remove(id);
+    const task = await this.repository.findOneBy({ id: Number(id) });
+    if (task) {
+      await this.repository.remove(task);
+    }
     return { task_id: id };
   }
 }
