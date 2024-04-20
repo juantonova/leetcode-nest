@@ -13,6 +13,7 @@ import { Task } from './tasks/entities/task.entity';
 import { Solution } from './solutions/entities/solution.entity';
 import { Rating } from './ratings/entities/rating.entity';
 import { Comment } from './comments/entities/comment.entity';
+import { dataSourceOptions } from './typeorm/data-source';
 
 @Module({
   imports: [
@@ -21,19 +22,7 @@ import { Comment } from './comments/entities/comment.entity';
     CommentsModule,
     RatingsModule,
     SolutionsModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5434,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'leetcode',
-      synchronize: true,
-      logging: false,
-      entities: [User, Task, Solution, Rating, Comment],
-      migrations: [],
-      subscribers: [],
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forFeature([User, Task, Solution, Rating, Comment]),
   ],
   controllers: [AppController],
