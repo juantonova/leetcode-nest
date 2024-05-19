@@ -23,7 +23,7 @@ export class Solution extends BaseEntity {
   @Column({ type: 'integer' })
   user_id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => Task)
   @JoinColumn({ name: 'task_id' })
   task: Task;
 

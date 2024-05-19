@@ -26,14 +26,39 @@ export class SolutionsService {
     return { solution: newSolution };
   }
 
-  async findAllByTaskId(id: string) {
+  async findAllByUserId(id: string) {
     if (!id) {
       throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
     }
-    const solutions = await this.repository.findBy({ task_id: Number(id) });
+    const solutions = await this.repository.findBy({ user_id: Number(id) });
     if (!solutions) {
       throw new NotFoundException(NotFoundErrors.SOLUTION);
     }
     return { solutions };
+  }
+
+  async findOneByUserId(id: string, taskId: string) {
+    if (!id || !taskId) {
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
+    }
+    const solutions = await this.repository.findBy({
+      user_id: Number(id),
+      task_id: Number(taskId),
+    });
+    if (!solutions) {
+      throw new NotFoundException(NotFoundErrors.SOLUTION);
+    }
+    return { solutions };
+  }
+
+  async remove(id: string) {
+    if (!id) {
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
+    }
+    const solution = await this.repository.findOneBy({ id: Number(id) });
+    if (solution) {
+      await this.repository.remove(solution);
+    }
+    return { task_id: id };
   }
 }
