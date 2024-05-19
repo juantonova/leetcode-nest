@@ -10,6 +10,7 @@ import { BadRequestErrors, NotFoundErrors } from '../enums/errors';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User as UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -38,6 +39,16 @@ export class UsersService {
       throw new NotFoundException(NotFoundErrors.USER);
     }
     return { user: this.updateUserInfoForResponse(user) };
+  }
+
+  async create(user: CreateUserDto) {
+    const { role, name, login, password, permissions, rating } = user;
+    if (!role || !name || !login || !password || !permissions || !rating) {
+      throw new BadRequestException(BadRequestErrors.INVALID_REQUEST);
+    }
+
+    const newUser = await this.repository.save(user);
+    return { task: newUser };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
